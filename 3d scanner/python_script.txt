@@ -1,0 +1,45 @@
+import serial
+import time
+
+# Configure the serial port
+serial_port = "COM3"  # Update with the appropriate serial port
+baud_rate = 115200  # Update with the baud rate matching the Arduino code
+
+# Open the serial connection
+ser = serial.Serial(serial_port, baud_rate)
+print("Serial connection established.")
+
+# Open the file for writing
+file_path = "data.txt"  # Update with the desired file path
+file = open(file_path, "w")
+print("File opened for writing.")
+
+last_receive_time = time.time()
+
+try:
+    while True:
+        # Read three lines of data from the serial port
+        data = [ser.readline().decode().strip() for _ in range(3)]
+
+        # Combine the data into a single line with commas
+        line = ",".join(data)
+
+        if line:
+            # Write the line of data to the file
+            file.write(line + "\n")
+            file.flush()
+
+            # Update the last receive time
+            last_receive_time = time.time()
+
+        # Check if no data has been received for 10 seconds
+        if time.time() - last_receive_time > 10:
+            print("No data received for 10 seconds. Exiting.")
+            break
+
+except KeyboardInterrupt:
+    # Close the file and serial connection on Ctrl+C
+    file.close()
+    ser.close()
+    print("File closed.")
+    print("Serial connection closed.")
